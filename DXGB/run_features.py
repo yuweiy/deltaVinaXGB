@@ -438,6 +438,41 @@ def run_dE_features(datadir, fn, inlig_rdkit, rewrite = False):
         outfile.write(fn + ",-300,300\n")
     outfile.close()
 
+def define_data_type(fn,inlig_pdb,inpro_pro,opt_type,water_type):
+    ### update input structures ###
+    inlig_C = inlig_pdb ### initial structure ###
+    inlig_Co = fn + "_lig_min.pdb"
+    inlig_Crwo = fn + "_lig_min_RW.pdb"
+    inlig_Cbwo = fn + "_lig_min_BW.pdb"
+    inlig_Cpwo = fn + "_lig_min_PW.pdb"
+    inpro_C = inpro_pro ### protein without water ####
+    inpro_Crw = fn + "_protein_RW.pdb"
+    inpro_Cbw = fn + "_protein_BW.pdb"
+    inpro_Cpw = fn + "_protein_PW.pdb"
+    ### get output file type ###
+    if opt_type == "rbwo":
+        d_type = {"":[inpro_C, inlig_C],"_min": [inpro_C, inlig_Co],"_min_RW": [inpro_Crw, inlig_Crwo], "_min_BW":[inpro_Cbw, inlig_Cbwo]}
+    elif opt_type == "rwo":
+        d_type = {"_min_RW": [inpro_Crw, inlig_Crwo]}
+    elif opt_type == "bwo":
+        d_type = {"_min_BW": [inpro_Cbw, inlig_Cbwo]}
+    elif opt_type == "pwo":
+        d_type = {"_min_PW":[inpro_Cpw, inlig_Cpwo]}
+    elif opt_type == "o":
+        d_type = {"_min":[inpro_C, inlig_Co]}
+    else:
+        if water_type == "rbw":
+            d_type = {"":[inpro_C, inlig_C], "_RW":[inpro_Crw, inlig_C], "_BW":[inpro_Cbw, inlig_C]}
+        elif water_type == "rw":
+            d_type = {"_RW":[inpro_Crw, inlig_C]}
+        elif water_type == "bw":
+            d_type = {"_BW":[inpro_Cbw, inlig_C]}
+        elif water_type == "pw":
+            d_type = {"_PW":[inpro_Cpw, inlig_C]}
+        else:
+            d_type = {"":[inpro_C, inlig_C]}
+
+    return d_type 
 
 def feature_calculation_ligand(datadir,fn, inlig_pdb, inlig_rdkit, inpro_pro, water_type, opt_type, rewrite = False, feature_type = "all"):
     """
@@ -515,33 +550,34 @@ def feature_calculation_ligand(datadir,fn, inlig_pdb, inlig_rdkit, inpro_pro, wa
             if feature_type == "all" or feature_type == "BW":
                 run_BW_features(datadir, i, fn, inpro_pro, inlig, inpro)
                 print("Finish Bridging Water feature calculation, save in Feature_BW" + i + ".csv")
-            else:
-                print("Use previous calculated Bridging Water feature in Feature_BW" + i + ".csv")
+ #           else:
+ #               print("Use previous calculated Bridging Water feature in Feature_BW" + i + ".csv")
+            
         ### get Vina58 ###
         if feature_type == "all" or feature_type == "Vina":
             run_Vina_features(datadir, i, fn, inpro, inlig)
             print("Finish Vina, save in Vina58" + i + ".csv")
-        else:
-            print("Use previous calculated Vina in Vina58" + i + ".csv")
+#        else:
+#            print("Use previous calculated Vina in Vina58" + i + ".csv")
         ### get sasa ###
         if feature_type == "all" or feature_type == "SASA":
             run_SASA_features(datadir, i, fn, inpro, inlig)
             print("Finish SASA, save in SASA" + i + ".csv")
-        else:
-            print("Use previous calculated SASA in SASA" + i + ".csv")
+#        else:
+#            print("Use previous calculated SASA in SASA" + i + ".csv")
         ### get ion ###
         if feature_type == "all" or feature_type == "Ion":
             run_Ion_features(datadir, i, fn, inpro, inlig)
             print("Finish Ion, save in Num_Ions" + i + ".csv")
-        else:
-            print("Use previous calculated Ion in Num_Ions" + i + ".csv")
+#        else:
+#            print("Use previous calculated Ion in Num_Ions" + i + ".csv")
 
     ### get dERMSD ###
     if feature_type == "all" or feature_type == "dE":
         run_dE_features(datadir, fn, inlig_rdkit, rewrite)
         print("Finish ligand stability calculation, save in dE_RMSD.csv")
-    else:
-        print("Use previous calculated ligand stability in dE_RMSD.csv")
+#    else:
+#        print("Use previous calculated ligand stability in dE_RMSD.csv")
 
     ### combine data ###
     if feature_type == "all":
@@ -601,6 +637,7 @@ def run_features(datadir, pdbid, water_type = "rbw", opt_type = "rbwo", rewrite 
     ### update input structures ###
     feature_calculation_ligand(datadir, pdbid, inlig_pdb, inlig_rdkit, inpro_pro, water_type, opt_type, rewrite, feature_type)
     print("Finish Feature Calculation")
+    return inpro, inlig, i, inpro_pro
 
     
  
